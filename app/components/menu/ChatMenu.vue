@@ -41,6 +41,13 @@ onDeactivated(() => {
 });
 
 const { open: openExtendMenu } = useOpenExtendWind();
+function isActivePath(path?: string) {
+  if (!path)
+    return false;
+  if (path === "/")
+    return route.path === "/";
+  return route.path === path || route.path.startsWith(`${path}/`);
+}
 // @unocss-include
 const menuList = computed<MenuItem[]>(() => ([
   {
@@ -62,6 +69,12 @@ const menuList = computed<MenuItem[]>(() => ([
     path: "/ai",
     icon: "i-solar:ghost-outline",
     activeIcon: "i-solar:ghost-bold",
+  },
+  {
+    title: "故事模式",
+    path: "/ai/story",
+    icon: "i-solar:book-line-duotone",
+    activeIcon: "i-solar:book-bold-duotone",
   },
   ...(setting.selectExtendMenuList || []).map(p => ({
     title: p.title,
@@ -136,7 +149,7 @@ export interface MenuItem {
         :element-loading-spinner="defaultLoadingIcon"
         element-loading-custom-class="text-.4em"
         :class="{
-          action: route.path === p.path,
+          action: isActivePath(p.path),
           [`${p.class}`]: p.class,
         }"
         :title="p.title"
@@ -149,7 +162,7 @@ export interface MenuItem {
         }"
       >
         <el-badge :value="p.tipValue" :hidden="!p?.tipValue" :is-dot="!!p?.isDot" :offset="[-2, -2]" :max="99">
-          <i class="icon p-2.6" :class="route.path === p.path ? p.activeIcon : p.icon" />
+          <i class="icon p-2.6" :class="isActivePath(p.path) ? p.activeIcon : p.icon" />
         </el-badge>
       </component>
       <!-- 设置 -->
