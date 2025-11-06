@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { MenuItem } from "./ChatMenu.vue";
-import { useOpenExtendWind } from "@/composables/tauri/extension";
 
 defineEmits<{
   (e: "close"): void
@@ -47,7 +46,14 @@ onDeactivated(() => {
 onBeforeUnmount(() => {
   unWatchDebounced();
 });
-const { open: openExtendMenu, openItem } = useOpenExtendWind();
+
+function isActivePath(path?: string) {
+  if (!path)
+    return false;
+  if (path === "/")
+    return route.path === "/";
+  return route.path === path || route.path.startsWith(`${path}/`);
+}
 // @unocss-include
 const menuList = computed<MenuItem[]>(() => [
   {
@@ -106,6 +112,12 @@ const menuList = computed<MenuItem[]>(() => [
         isDot: true,
       },
       {
+        title: "AI 故事",
+        path: "/ai/story",
+        icon: "i-solar:book-line-duotone",
+        activeIcon: "i-solar:book-bold-duotone",
+      },
+      {
         title: "API Key",
         path: "/api/key",
         icon: "i-solar:code-square-outline",
@@ -140,7 +152,7 @@ const activeMenu = computed({
   >
     <div
       v-for="p in menuList" :key="p.path" :index="p.path" class="item"
-      :class="{ active: activeMenu === p.path }"
+      :class="{ active: isActivePath(p.path) }"
       @click.stop="() => {
         if (p.path)
           activeMenu = p.path
@@ -153,7 +165,7 @@ const activeMenu = computed({
         :max="99"
         :is-dot="p.isDot"
       >
-        <i class="p-3" :class="route.path === p.path ? p.activeIcon : p.icon" />
+        <i class="p-3" :class="isActivePath(p.path) ? p.activeIcon : p.icon" />
         <span mt-2 block select-none text-center text-3>{{ p.title }}</span>
       </el-badge>
       <el-popover
@@ -178,7 +190,7 @@ const activeMenu = computed({
               }
             }"
           >
-            <i class="p-3" :class="route.path === p.path ? p.activeIcon : p.icon" />
+            <i class="p-3" :class="isActivePath(p.path) ? p.activeIcon : p.icon" />
             <span mt-2 block select-none text-center text-3>{{ p.title }}</span>
           </el-badge>
         </template>
@@ -186,7 +198,7 @@ const activeMenu = computed({
           <ul class="grid cols-1 gap-3">
             <el-badge
               v-for="item in p.children"
-              :key="item.path" :value="item.tipValue || 0" :hidden="!item.tipValue" :max="99" :is-dot="item.isDot" class="flex-row-c-c cursor-pointer gap-6 px-2 py-1" :index="p.path" :class="{ active: activeMenu === item.path }"
+              :key="item.path" :value="item.tipValue || 0" :hidden="!item.tipValue" :max="99" :is-dot="item.isDot" class="flex-row-c-c cursor-pointer gap-6 px-2 py-1" :index="p.path" :class="{ active: isActivePath(item.path) }"
               @click.stop="(e: MouseEvent) => {
                 if (item.path) {
                   activeMenu = item.path
@@ -197,10 +209,10 @@ const activeMenu = computed({
                 }
               }"
             >
-              <i class="inline-block p-3" :class="route.path === item.path ? item.activeIcon : item.icon" />
+              <i class="inline-block p-3" :class="isActivePath(item.path) ? item.activeIcon : item.icon" />
               <span>{{ item.title }}</span>
             </el-badge>
-          </ul>
+
         </template>
       </el-popover>
     </div>
