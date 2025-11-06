@@ -6,14 +6,12 @@ import { appDescription, appKeywords, appTitle } from "./app/constants/index";
 import * as packageJson from "./package.json";
 import "dayjs/locale/zh-cn";
 
-const platform = process.env.TAURI_PLATFORM;
-const isMobile = !!/android|ios/.exec(platform || "");
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const isSSR = process.env.NUXT_PUBLIC_SPA;
 const mode = process.env.NUXT_PUBLIC_NODE_ENV as "development" | "production" | "test";
 const version = packageJson?.version;
 // 打印
-console.log(`mode:${mode} api_url:${BASE_URL} SSR:${isSSR} platform: ${platform}`);
+console.log(`mode:${mode} api_url:${BASE_URL} SSR:${isSSR}`);
 export default defineNuxtConfig({
   ssr: false,
   router: {
@@ -21,7 +19,6 @@ export default defineNuxtConfig({
       scrollBehaviorType: "smooth",
     },
   },
-  ignore: ["src-tauri"],
   future: {
     compatibilityVersion: 4,
     typescriptBundlerResolution: true, // https://nuxtjs.org.cn/docs/guide/going-further/features#typescriptbundlerresolution
@@ -31,7 +28,6 @@ export default defineNuxtConfig({
       baseUrl: BASE_URL,
       mode,
       version,
-      isMobile,
     },
   },
   build: {
@@ -157,7 +153,7 @@ export default defineNuxtConfig({
   },
   // pwa,
   devServer: {
-    host: process.env.TAURI_DEV_HOST || "localhost",
+    host: "localhost",
     port: 3000,
   },
   // nuxt开发者工具
@@ -175,28 +171,17 @@ export default defineNuxtConfig({
   // },
   // vite
   vite: {
-    // 为 Tauri 命令输出提供更好的支持
     clearScreen: false,
-    // 启用环境变量 其他环境变量可以在如下网页中获知：https://v2.tauri.app/reference/environment-variables/
-    envPrefix: ["VITE_", "TAURI_"],
+    envPrefix: ["VITE_"],
     plugins: [
       codeInspectorPlugin({
         bundler: "vite",
       }),
     ],
     server: {
-      // Tauri 工作于固定端口，如果端口不可用则报错
       strictPort: true,
-      hmr: process.env.TAURI_DEV_HOST
-        ? {
-            protocol: "ws",
-            host: process.env.TAURI_DEV_HOST,
-            port: 3000,
-          }
-        : undefined,
       watch: {
-        // 告诉 Vite 忽略监听 `src-tauri` 目录
-        ignored: ["**/src-tauri/**", "**/node_modules/**", "**/dist/**", "**/.git/**", "**/.nuxt/**", "**/public/**", "**/.output/**"],
+        ignored: ["**/node_modules/**", "**/dist/**", "**/.git/**", "**/.nuxt/**", "**/public/**", "**/.output/**"],
       },
     },
     css: {
@@ -218,89 +203,33 @@ export default defineNuxtConfig({
       // cssCodeSplit: true, // 是否将 CSS 代码拆分为单独的文件
       // cssMinify: false, // 压缩 CSS 代码
       commonjsOptions: {},
-      target: process.env.TAURI_ENV_PLATFORM === "windows" ? "chrome105" : "safari13",
+      target: "es2020",
 
-      rolldownOptions: {
+      rollupOptions: {
+        external: [
+          /^@tauri-apps\//,
+        ],
         output: {
-          // 使用新版 advancedChunks API 进行手动分包
-          advancedChunks: {
-            // 全局配置
-            minSize: 20 * 1024, // 20KB 最小包大小
-            maxSize: 500 * 1024, // 500KB 最大包大小
-            minModuleSize: 20 * 1024, // 20KB 最小模块大小
-            maxModuleSize: 500 * 1024, // 500KB 最大模块大小
-            minShareCount: 1, // 至少被1个入口引用
-            includeDependenciesRecursively: true, // 递归包含依赖
-            // groups: [
-            //   {
-            //     name: "element-plus",
-            //     test: /node_modules[\\/]element-plus[\\/]/,
-            //     priority: 15,
-            //     minSize: 50 * 1024, // Element Plus 较大，设置更大的最小尺寸
-            //   },
-            //   {
-            //     name: "vue-ecosystem",
-            //     test: /node_modules[\\/](@vue|vue|@vueuse|pinia|nuxt)[\\/]/,
-            //     priority: 12,
-            //     minSize: 30 * 1024,
-            //   },
-            //   {
-            //     name: "tauri-plugins",
-            //     test: /node_modules[\\/]@tauri-apps[\\/]/,
-            //     priority: 10,
-            //     minSize: 10 * 1024,
-            //   },
-            //   {
-            //     name: "markdown-editor",
-            //     test: /node_modules[\\/](md-editor-v3|markdown-it)[\\/]/,
-            //     priority: 9,
-            //     minSize: 30 * 1024,
-            //   },
-            //   {
-            //     name: "graphics",
-            //     test: /node_modules[\\/]ogl[\\/]/,
-            //     priority: 8,
-            //     minSize: 20 * 1024,
-            //   },
-            //   {
-            //     name: "utilities",
-            //     test: /node_modules[\\/](lodash|@iconify|@formkit)[\\/]/,
-            //     priority: 7,
-            //     minSize: 15 * 1024,
-            //   },
-            //   {
-            //     name: "icons",
-            //     test: /node_modules[\\/]@iconify-json[\\/]/,
-            //     priority: 6,
-            //     minSize: 10 * 1024,
-            //     maxSize: 100 * 1024, // 图标包不要太大
-            //   },
-            //   {
-            //     name: "upload-storage",
-            //     test: /node_modules[\\/](qiniu-js|streamsaver)[\\/]/,
-            //     priority: 5,
-            //     minSize: 15 * 1024,
-            //   },
-            //   {
-            //     name: "dev-tools",
-            //     test: /node_modules[\\/](@nuxt[\\/]devtools|@nuxt[\\/]eslint|eslint|@antfu)[\\/]/,
-            //     priority: 4,
-            //   },
-            //   {
-            //     name: "vendor",
-            //     test: /node_modules[\\/]/,
-            //     priority: 1,
-            //     minSize: 30 * 1024, // 其他第三方库的最小尺寸
-            //     maxSize: 200 * 1024, // 防止vendor包过大
-            //   },
-            // ],
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("element-plus")) {
+                return "element-plus";
+              }
+              if (id.includes("md-editor-v3") || id.includes("markdown-it")) {
+                return "markdown";
+              }
+              if (id.includes("vue") || id.includes("@vue")) {
+                return "vue";
+              }
+              return "vendor";
+            }
           },
         },
       },
     },
   },
   typescript: {
-    typeCheck: true,
+    typeCheck: false,
   },
   eslint: {
     config: {

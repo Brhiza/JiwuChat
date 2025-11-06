@@ -212,7 +212,7 @@ const activeMenu = computed({
               <i class="inline-block p-3" :class="isActivePath(item.path) ? item.activeIcon : item.icon" />
               <span>{{ item.title }}</span>
             </el-badge>
-
+          </ul>
         </template>
       </el-popover>
     </div>
