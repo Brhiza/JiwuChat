@@ -110,7 +110,7 @@ class EnvironmentChecker {
   }
 
   /**
-   * 检查 Rust 是否安装
+   * 检查 Rust 是否安装（Web 前端版本可选）
    */
   checkRustInstallation() {
     try {
@@ -122,9 +122,8 @@ class EnvironmentChecker {
       log.success(`cargo: ${cargoOutput}`);
     }
     catch (error) {
-      this.errors.push("Rust 工具链未安装或不可用");
-      log.error("Rust 工具链未安装或不可用");
-      log.warning("请访问 https://rustup.rs/ 安装 Rust");
+      log.warning("Rust 工具链未安装（Web 前端版本不需要）");
+      log.info("如需桌面端功能，请访问 https://rustup.rs/ 安装 Rust");
     }
   }
 
@@ -178,11 +177,11 @@ class EnvironmentChecker {
     // 运行命令
     log.title("运行命令:");
     console.log("");
-    console.log(`${colors.bright}${colors.blue}📦 生产环境 Nuxt 服务:${colors.reset}`);
-    console.log(`   ${colors.cyan}pnpm run prod:nuxt${colors.reset}`);
+    console.log(`${colors.bright}${colors.blue}🚀 开发模式:${colors.reset}`);
+    console.log(`   ${colors.cyan}pnpm dev${colors.reset}`);
     console.log("");
-    console.log(`${colors.bright}${colors.blue}🔧 开发环境 Tauri 应用:${colors.reset}`);
-    console.log(`   ${colors.cyan}pnpm run dev:tauri${colors.reset}`);
+    console.log(`${colors.bright}${colors.blue}📦 构建生产版本:${colors.reset}`);
+    console.log(`   ${colors.cyan}pnpm build${colors.reset}`);
     console.log("");
     console.log(`${colors.bright}${colors.blue}🛠️ 开发工具:${colors.reset}`);
     console.log(`   ${colors.cyan}pnpm run tools${colors.reset}`);
